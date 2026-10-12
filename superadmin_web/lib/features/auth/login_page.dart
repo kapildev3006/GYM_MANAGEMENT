@@ -30,20 +30,34 @@ class _LoginPageState extends State<LoginPage> {
   String? _2faMethod;
 
   final List<String> _backgroundImages = [
-    'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=60&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=60&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=60&w=1200&auto=format&fit=crop',
   ];
+  bool _precacheStarted = false;
 
   @override
   void initState() {
     super.initState();
     _loadRememberedCredentials();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {
-        _currentImageIndex = (_currentImageIndex + 1) % _backgroundImages.length;
-      });
+    _timer = Timer.periodic(const Duration(seconds: 7), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentImageIndex = (_currentImageIndex + 1) % _backgroundImages.length;
+        });
+      }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precacheStarted) {
+      _precacheStarted = true;
+      for (final imageUrl in _backgroundImages) {
+        precacheImage(NetworkImage(imageUrl), context);
+      }
+    }
   }
 
   Future<void> _loadRememberedCredentials() async {

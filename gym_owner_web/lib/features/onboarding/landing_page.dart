@@ -15,22 +15,36 @@ class LandingPage extends ConsumerStatefulWidget {
 class _LandingPageState extends ConsumerState<LandingPage> {
   int _currentImageIndex = 0;
   Timer? _timer;
+  bool _precacheStarted = false;
 
   final List<String> _backgroundImages = [
-    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=2069&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=60&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=60&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=60&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=60&w=1200&auto=format&fit=crop',
   ];
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {
-        _currentImageIndex = (_currentImageIndex + 1) % _backgroundImages.length;
-      });
+    _timer = Timer.periodic(const Duration(seconds: 7), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentImageIndex = (_currentImageIndex + 1) % _backgroundImages.length;
+        });
+      }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precacheStarted) {
+      _precacheStarted = true;
+      for (final imageUrl in _backgroundImages) {
+        precacheImage(NetworkImage(imageUrl), context);
+      }
+    }
   }
 
   @override
@@ -46,13 +60,30 @@ class _LandingPageState extends ConsumerState<LandingPage> {
     final isMobile = size.width < 600;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
+          // Base Dark Gradient Background (renders immediately)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0F172A),
+                    Color(0xFF1E293B),
+                    Color(0xFF0B0F19),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // Background Image Carousel
           Positioned.fill(
             child: AnimatedSwitcher(
-              duration: const Duration(seconds: 1),
+              duration: const Duration(milliseconds: 1200),
               child: Container(
                 key: ValueKey<int>(_currentImageIndex),
                 decoration: BoxDecoration(

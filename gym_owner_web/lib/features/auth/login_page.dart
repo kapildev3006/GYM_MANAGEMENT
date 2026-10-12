@@ -36,18 +36,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _obscurePassword = true;
 
   final List<String> _backgroundImages = [
-    'https://images.unsplash.com/photo-1576678927484-cc907957088c?q=80&w=2187&auto=format&fit=crop', // Different gym image 1
-    'https://images.unsplash.com/photo-1593079831268-3381b0c4239a?q=80&w=2069&auto=format&fit=crop', // Different gym image 2
-    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop', // Different gym image 3
+    'https://images.unsplash.com/photo-1576678927484-cc907957088c?q=60&w=1200&auto=format&fit=crop', // Different gym image 1
+    'https://images.unsplash.com/photo-1593079831268-3381b0c4239a?q=60&w=1200&auto=format&fit=crop', // Different gym image 2
+    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=60&w=1200&auto=format&fit=crop', // Different gym image 3
   ];
+  bool _precacheStarted = false;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {
-        _currentImageIndex = (_currentImageIndex + 1) % _backgroundImages.length;
-      });
+    _timer = Timer.periodic(const Duration(seconds: 7), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentImageIndex = (_currentImageIndex + 1) % _backgroundImages.length;
+        });
+      }
     });
 
     try {
@@ -63,6 +66,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         }
       });
     } catch (_) {}
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precacheStarted) {
+      _precacheStarted = true;
+      for (final imageUrl in _backgroundImages) {
+        precacheImage(NetworkImage(imageUrl), context);
+      }
+    }
   }
 
   @override
@@ -421,7 +435,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 color: isDesktop ? Colors.white : null,
                 image: !isDesktop 
                     ? const DecorationImage(
-                        image: NetworkImage('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop'),
+                        image: NetworkImage('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=60&w=800&auto=format&fit=crop'),
                         fit: BoxFit.cover,
                         colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
                       )
